@@ -20,7 +20,7 @@ export default function BasicDatePicker({label,value,setValue,error,helperText,f
         value={value}
         onChange={(newValue) => {
           let val_obj = {target:{
-            value:newValue
+            value:newValue._d
           }}
           setValue(val_obj);
         }}

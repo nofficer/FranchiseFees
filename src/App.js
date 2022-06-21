@@ -14,18 +14,19 @@ function App() {
   const [selectedLocation, setSelectedLocation] = useState('placeholder')
   const [selectableLocations,setSelectableLocations] = useState(locations)
   const [visibleLocations,setVisibleLocations] = useState(locations)
-  const [date, setDate] = useState(new Date(moment().format()));
-
+  const [date, setDate] = useState(moment('2022-01-01'));
   const handleDateChange = (newValue) => {
     setDate(newValue.target.value);
   };
 
+  // Need to format the locations to conform to my dropdown implementation
   const formatLocations = (locArray) => {
     return locArray.map((loc) => {
       return {_id:loc._id, name: loc.address}
     })
   }
 
+  // Define the locations that correspond to each Franchisee and memoize it
   const renderFranchiseeLocations = () => {
     let franchiseeLocations = {}
     franchisees.forEach((item, i) => {
@@ -37,6 +38,7 @@ function App() {
   const franchiseeLocationsObject = useMemo(() =>renderFranchiseeLocations(),[])
 
   useEffect(() => {
+    // If franchisee has been selected we will only render the locations which correspond to them in the dropdown and in the Sales Table
     if(selectedFranchisee!=='placeholder'){
       let filteredLocations = locations.filter((location) => {
         return franchiseeLocationsObject[selectedFranchisee].includes(location._id)
@@ -48,19 +50,30 @@ function App() {
       setVisibleLocations(formatLocations(filteredLocations))
       setSelectableLocations(formatLocations(filteredLocations))
     }
-    else if(selectedLocation!=='placeholder'){
+    // If the franchisee has not been selected by the location has then we will only render the 1 location total in the sales table, but we will still display all locations in the dropdown
+    else if(selectedLocation!=='placeholder' &&selectedFranchisee!== 'placeholder'){
       let filteredLocations = locations.filter((location) => {
         return location._id === selectedLocation
       })
       setVisibleLocations(formatLocations(filteredLocations))
     }
+    // If the user resets the franchisee dropdown while a location is selected correctly show the selected location and maintain that all locations are selectable
+    else if(selectedLocation!=='placeholder' &&selectedFranchisee=== 'placeholder'){
+      let filteredLocations = locations.filter((location) => {
+        return location._id === selectedLocation
+      })
+      setVisibleLocations(formatLocations(filteredLocations))
+      setSelectableLocations(formatLocations(locations))
+    }
+
+    // If neither has been selected we will render all the available locations in both sales table and dropdown
     else{
       setVisibleLocations(formatLocations(locations))
       setSelectableLocations(formatLocations(locations))
     }
   },[selectedFranchisee,selectedLocation])
 
-
+// Define the franchisees which exist and memoize them
   const renderFranchisees = () => {
     return franchisees.map((franchisee) => {
       return {_id:franchisee._id, name: franchisee.first_name + " " + franchisee.last_name}
